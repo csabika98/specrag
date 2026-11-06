@@ -18,6 +18,9 @@ dependencies = { file = ["requirements.txt"] }
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+# src layout: without this, importing specrag needs PYTHONPATH=src, which is
+# easy to have exported locally and absent in CI.
+pythonpath = ["src"]
 markers = [
     "network: hits the live gov.uk API (deselect with -m 'not network')",
     "slow: loads the embedding model (deselect with -m 'not slow')",
