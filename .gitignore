@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Corpus and build artefacts are reproducible; do not commit them.
+data/raw/
+data/parsed/
+data/index/
+models/
