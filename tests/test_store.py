@@ -13,8 +13,9 @@ from specrag.ingest.chunk import Chunk
 
 
 def chunk(cid: str, text: str, heading: str | None = None) -> Chunk:
-    return Chunk(chunk_id=cid, part="K", heading=heading, clauses=(cid,), text=text,
-                 page_start=1, page_end=1)
+    return Chunk(
+        chunk_id=cid, part="K", heading=heading, clauses=(cid,), text=text, page_start=1, page_end=1
+    )
 
 
 @pytest.fixture
@@ -52,8 +53,13 @@ class TestHashingEmbedder:
             "print(round(float(HashingEmbedder(32).encode(['stairs'])[0][3]), 6))"
         )
         runs = {
-            subprocess.run([sys.executable, "-c", code], capture_output=True, text=True,
-                           check=True, env={"PYTHONHASHSEED": seed, "PYTHONPATH": "src"}).stdout.strip()
+            subprocess.run(
+                [sys.executable, "-c", code],
+                capture_output=True,
+                text=True,
+                check=True,
+                env={"PYTHONHASHSEED": seed, "PYTHONPATH": "src"},
+            ).stdout.strip()
             for seed in ("0", "1", "12345")
         }
         assert len(runs) == 1
@@ -94,7 +100,9 @@ class TestVectorStore:
         original = VectorStore.build(chunks, embedder)
         original.save(tmp_path)
         before = [c.chunk_id for c, _ in original.search("handrail", embedder, k=3)]
-        after = [c.chunk_id for c, _ in VectorStore.load(tmp_path).search("handrail", embedder, k=3)]
+        after = [
+            c.chunk_id for c, _ in VectorStore.load(tmp_path).search("handrail", embedder, k=3)
+        ]
         assert before == after
 
     def test_preserves_chunk_metadata_across_a_reload(self, embedder, tmp_path):

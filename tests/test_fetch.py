@@ -34,7 +34,9 @@ class TestDocumentRefPart:
     def test_does_not_read_a_lowercase_word_as_a_part_letter(self):
         # Under a case-insensitive match this yields part "TO", because "to"
         # fits [A-Z]{1,2} and is followed by a word boundary.
-        assert DocumentRef(title="Approved Document to the regulations", base_path="/x").part is None
+        assert (
+            DocumentRef(title="Approved Document to the regulations", base_path="/x").part is None
+        )
 
 
 class TestParseCollection:
@@ -97,8 +99,11 @@ class TestParseAttachments:
         payload = {
             "details": {
                 "attachments": [
-                    {"title": "Spreadsheet", "url": "https://x/a.xlsx",
-                     "content_type": "application/vnd.ms-excel"},
+                    {
+                        "title": "Spreadsheet",
+                        "url": "https://x/a.xlsx",
+                        "content_type": "application/vnd.ms-excel",
+                    },
                     {"title": "AD K", "url": "https://x/k.pdf", "content_type": "application/pdf"},
                 ]
             }
@@ -107,7 +112,9 @@ class TestParseAttachments:
         assert pdf.title == "AD K"
 
     def test_skips_attachments_with_no_url(self):
-        payload = {"details": {"attachments": [{"title": "Broken", "content_type": "application/pdf"}]}}
+        payload = {
+            "details": {"attachments": [{"title": "Broken", "content_type": "application/pdf"}]}
+        }
         assert parse_attachments(payload, "K") == []
 
     def test_falls_back_to_a_generated_title(self):

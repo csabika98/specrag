@@ -20,14 +20,42 @@ def embedder():
 @pytest.fixture
 def store(embedder):
     chunks = [
-        Chunk("K:1.7", "K", "Nosings", ("1.7",),
-              "Make step nosings apparent using a contrasting material a minimum of 55mm wide.", 1, 1),
-        Chunk("K:1.34", "K", "Handrails", ("1.34",),
-              "Position the top of the handrail 900mm to 1000mm from the pitch line or floor.", 2, 2),
-        Chunk("K:2.8-2.9", "K", "Ramps", ("2.8", "2.9"),
-              "Design ramps with a maximum slope of 1:12 and a minimum width of 1500mm.", 3, 3),
-        Chunk("K:5.4", "K", "Glazing", ("5.4",),
-              "Glazing in a critical location should satisfy Class 3 of BS EN 12600.", 4, 4),
+        Chunk(
+            "K:1.7",
+            "K",
+            "Nosings",
+            ("1.7",),
+            "Make step nosings apparent using a contrasting material a minimum of 55mm wide.",
+            1,
+            1,
+        ),
+        Chunk(
+            "K:1.34",
+            "K",
+            "Handrails",
+            ("1.34",),
+            "Position the top of the handrail 900mm to 1000mm from the pitch line or floor.",
+            2,
+            2,
+        ),
+        Chunk(
+            "K:2.8-2.9",
+            "K",
+            "Ramps",
+            ("2.8", "2.9"),
+            "Design ramps with a maximum slope of 1:12 and a minimum width of 1500mm.",
+            3,
+            3,
+        ),
+        Chunk(
+            "K:5.4",
+            "K",
+            "Glazing",
+            ("5.4",),
+            "Glazing in a critical location should satisfy Class 3 of BS EN 12600.",
+            4,
+            4,
+        ),
     ]
     return VectorStore.build(chunks, embedder)
 
@@ -40,10 +68,18 @@ def write_questions(tmp_path, rows):
 
 class TestLoadQuestions:
     def test_reads_every_field(self, tmp_path):
-        path = write_questions(tmp_path, [{
-            "id": "q1", "question": "How high?", "relevant_clauses": ["1.34"],
-            "expected": "900mm to 1000mm.", "part": "K",
-        }])
+        path = write_questions(
+            tmp_path,
+            [
+                {
+                    "id": "q1",
+                    "question": "How high?",
+                    "relevant_clauses": ["1.34"],
+                    "expected": "900mm to 1000mm.",
+                    "part": "K",
+                }
+            ],
+        )
         [question] = load_questions(path)
         assert question.id == "q1"
         assert question.relevant_clauses == frozenset({"1.34"})
@@ -51,7 +87,13 @@ class TestLoadQuestions:
 
     def test_skips_blank_lines(self, tmp_path):
         path = tmp_path / "q.jsonl"
-        row = {"id": "q1", "question": "x", "relevant_clauses": ["1.1"], "expected": "y", "part": "K"}
+        row = {
+            "id": "q1",
+            "question": "x",
+            "relevant_clauses": ["1.1"],
+            "expected": "y",
+            "part": "K",
+        }
         path.write_text(json.dumps(row) + "\n\n\n", encoding="utf-8")
         assert len(load_questions(path)) == 1
 
@@ -64,36 +106,68 @@ class TestLoadQuestions:
 
 class TestEvaluate:
     def test_finds_a_clause_that_is_present(self, store, embedder, tmp_path):
-        path = write_questions(tmp_path, [{
-            "id": "q", "question": "What width must a contrasting step nosing be?",
-            "relevant_clauses": ["1.7"], "expected": "55mm", "part": "K",
-        }])
+        path = write_questions(
+            tmp_path,
+            [
+                {
+                    "id": "q",
+                    "question": "What width must a contrasting step nosing be?",
+                    "relevant_clauses": ["1.7"],
+                    "expected": "55mm",
+                    "part": "K",
+                }
+            ],
+        )
         report, [result] = evaluate(store, embedder, load_questions(path))
         assert result.found_at is not None
         assert report.hit_at_5 == 1.0
 
     def test_records_a_miss_when_no_clause_matches(self, store, embedder, tmp_path):
-        path = write_questions(tmp_path, [{
-            "id": "q", "question": "anything", "relevant_clauses": ["9.9"],
-            "expected": "nothing", "part": "K",
-        }])
+        path = write_questions(
+            tmp_path,
+            [
+                {
+                    "id": "q",
+                    "question": "anything",
+                    "relevant_clauses": ["9.9"],
+                    "expected": "nothing",
+                    "part": "K",
+                }
+            ],
+        )
         report, [result] = evaluate(store, embedder, load_questions(path))
         assert result.found_at is None
         assert report.hit_at_5 == 0.0
 
     def test_a_merged_chunk_satisfies_either_of_its_clauses(self, store, embedder, tmp_path):
-        path = write_questions(tmp_path, [{
-            "id": "q", "question": "What is the maximum ramp slope?",
-            "relevant_clauses": ["2.9"], "expected": "1:12", "part": "K",
-        }])
+        path = write_questions(
+            tmp_path,
+            [
+                {
+                    "id": "q",
+                    "question": "What is the maximum ramp slope?",
+                    "relevant_clauses": ["2.9"],
+                    "expected": "1:12",
+                    "part": "K",
+                }
+            ],
+        )
         _, [result] = evaluate(store, embedder, load_questions(path))
         assert result.found_at is not None  # chunk K:2.8-2.9 carries 2.9
 
     def test_respects_the_retrieval_depth(self, store, embedder, tmp_path):
-        path = write_questions(tmp_path, [{
-            "id": "q", "question": "glazing class critical location",
-            "relevant_clauses": ["5.4"], "expected": "Class 3", "part": "K",
-        }])
+        path = write_questions(
+            tmp_path,
+            [
+                {
+                    "id": "q",
+                    "question": "glazing class critical location",
+                    "relevant_clauses": ["5.4"],
+                    "expected": "Class 3",
+                    "part": "K",
+                }
+            ],
+        )
         _, [result] = evaluate(store, embedder, load_questions(path), k=1)
         assert len(result.retrieved) == 1
 
@@ -104,18 +178,34 @@ class TestEvaluate:
 
 class TestFormatFailures:
     def test_reports_no_misses(self, store, embedder, tmp_path):
-        path = write_questions(tmp_path, [{
-            "id": "q", "question": "step nosing contrasting width",
-            "relevant_clauses": ["1.7"], "expected": "55mm", "part": "K",
-        }])
+        path = write_questions(
+            tmp_path,
+            [
+                {
+                    "id": "q",
+                    "question": "step nosing contrasting width",
+                    "relevant_clauses": ["1.7"],
+                    "expected": "55mm",
+                    "part": "K",
+                }
+            ],
+        )
         _, results = evaluate(store, embedder, load_questions(path))
         assert format_failures(results) == "No misses."
 
     def test_names_the_missed_question_and_what_was_wanted(self, store, embedder, tmp_path):
-        path = write_questions(tmp_path, [{
-            "id": "missing-one", "question": "unrelated", "relevant_clauses": ["9.9"],
-            "expected": "nothing", "part": "K",
-        }])
+        path = write_questions(
+            tmp_path,
+            [
+                {
+                    "id": "missing-one",
+                    "question": "unrelated",
+                    "relevant_clauses": ["9.9"],
+                    "expected": "nothing",
+                    "part": "K",
+                }
+            ],
+        )
         _, results = evaluate(store, embedder, load_questions(path))
         text = format_failures(results)
         assert "missing-one" in text and "9.9" in text

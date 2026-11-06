@@ -67,7 +67,11 @@ def evaluate(
         hits = store.search(question.question, embedder, k=k)
         retrieved = [set(chunk.clauses) for chunk, _ in hits]
         found_at = next(
-            (i for i, clauses in enumerate(retrieved, start=1) if clauses & question.relevant_clauses),
+            (
+                i
+                for i, clauses in enumerate(retrieved, start=1)
+                if clauses & question.relevant_clauses
+            ),
             None,
         )
         results.append(

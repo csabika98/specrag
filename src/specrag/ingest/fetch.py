@@ -127,7 +127,9 @@ def download(pdfs: list[PdfRef], dest: Path | None = None) -> list[Path]:
     with httpx.Client(timeout=120.0, follow_redirects=True) as client:
         for pdf in pdfs:
             target = dest / pdf.filename
-            if target.exists() and (pdf.size_bytes is None or target.stat().st_size == pdf.size_bytes):
+            if target.exists() and (
+                pdf.size_bytes is None or target.stat().st_size == pdf.size_bytes
+            ):
                 paths.append(target)
                 continue
             response = client.get(pdf.url)

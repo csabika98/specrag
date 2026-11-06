@@ -70,10 +70,12 @@ class TestRecallAtK:
 
 class TestAggregate:
     def test_averages_across_questions(self):
-        report = aggregate([
-            (ranking("1.7"), {"1.7"}),          # hit@1
-            (ranking("9.9", "2.1"), {"2.1"}),   # hit@3 but not hit@1
-        ])
+        report = aggregate(
+            [
+                (ranking("1.7"), {"1.7"}),  # hit@1
+                (ranking("9.9", "2.1"), {"2.1"}),  # hit@3 but not hit@1
+            ]
+        )
         assert report.questions == 2
         assert report.hit_at_1 == 0.5
         assert report.hit_at_3 == 1.0

@@ -14,7 +14,9 @@ INDEX_DIR = DATA_DIR / "index"
 GOLDEN_DIR = DATA_DIR / "golden"
 
 # Small enough to embed a full corpus on a CPU-only machine with ~1GB free RAM.
-EMBEDDING_MODEL = os.environ.get("SPECRAG_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+EMBEDDING_MODEL = os.environ.get(
+    "SPECRAG_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+)
 EMBEDDING_BATCH_SIZE = int(os.environ.get("SPECRAG_EMBEDDING_BATCH", "16"))
 
 # Chunking. Approved Documents are written as numbered clauses, so chunks are

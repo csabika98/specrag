@@ -48,10 +48,7 @@ class Chunk:
     def citation(self) -> str:
         if len(self.clauses) == 1:
             return f"Approved Document {self.part}, paragraph {self.clauses[0]}"
-        return (
-            f"Approved Document {self.part}, paragraphs "
-            f"{self.clauses[0]}-{self.clauses[-1]}"
-        )
+        return f"Approved Document {self.part}, paragraphs {self.clauses[0]}-{self.clauses[-1]}"
 
     def to_embedding_text(self) -> str:
         """Text handed to the embedding model.
@@ -106,12 +103,12 @@ def split_clauses(pages: list[Page], part: str) -> list[Clause]:
             flush()
             current_number = match.group(1)
             current_page = page_number
-            buffer = [line.strip()[match.end():]]
+            buffer = [line.strip()[match.end() :]]
             continue
 
         if _looks_like_heading(line):
             next_line = next(
-                (text for _, text in lines[index + 1:] if text.strip()),
+                (text for _, text in lines[index + 1 :] if text.strip()),
                 "",
             )
             if _CLAUSE_RE.match(next_line.strip()):

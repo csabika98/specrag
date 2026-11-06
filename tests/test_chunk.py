@@ -18,12 +18,24 @@ class TestSplitClauses:
         assert clause.page == 1
 
     def test_joins_lines_that_wrap_within_a_clause(self):
-        pages = [page(1, "1.1 The guidance covers internal and external steps", "when part of the building.")]
+        pages = [
+            page(
+                1,
+                "1.1 The guidance covers internal and external steps",
+                "when part of the building.",
+            )
+        ]
         [clause] = split_clauses(pages, "K")
-        assert clause.text == "The guidance covers internal and external steps when part of the building."
+        assert (
+            clause.text
+            == "The guidance covers internal and external steps when part of the building."
+        )
 
     def test_continues_a_clause_across_a_page_break(self):
-        pages = [page(1, "1.1 The guidance covers steps"), page(2, "that form part of the building.")]
+        pages = [
+            page(1, "1.1 The guidance covers steps"),
+            page(2, "that form part of the building."),
+        ]
         [clause] = split_clauses(pages, "K")
         assert clause.text == "The guidance covers steps that form part of the building."
         assert clause.page == 1
@@ -100,7 +112,9 @@ class TestPackChunks:
         long_text = " ".join(f"Sentence number {i} runs on." for i in range(60))
         chunks = pack_chunks(
             [Clause(number="1.1", heading=None, text=long_text, page=1)],
-            "K", max_chars=300, min_chars=100,
+            "K",
+            max_chars=300,
+            min_chars=100,
         )
         assert len(chunks) > 1
         assert all(len(c.text) <= 400 for c in chunks)
